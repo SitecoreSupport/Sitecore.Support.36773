@@ -44,6 +44,7 @@
   <ItemGroup>
     <Reference Include="Sitecore.Commerce.XA.Foundation.Common">
       <HintPath>..\..\lib\Sitecore.Commerce.XA.Foundation.Common.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Sitecore.Kernel">
       <HintPath>..\packages\SC.Sitecore.Kernel.9.0.1\lib\Sitecore.Kernel.dll</HintPath>
