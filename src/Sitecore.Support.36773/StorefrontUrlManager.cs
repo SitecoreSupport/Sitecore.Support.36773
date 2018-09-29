@@ -1,10 +1,10 @@
-﻿using Sitecore.Commerce.XA.Foundation.Common;
-using Sitecore.Commerce.XA.Foundation.Common.UrlManager;
-using System;
-using System.Globalization;
-
-namespace Sitecore.Support.Commerce.XA.Foundation.Common.UrlManager
+﻿namespace Sitecore.Support.Commerce.XA.Foundation.Common.UrlManager
 {
+  using Sitecore.Commerce.XA.Foundation.Common.UrlManager;
+  using System;
+  using System.Globalization;
+  using System.Runtime.Remoting.Contexts;
+  using Sitecore.Commerce.XA.Foundation.Common.Context;
   public class StorefrontUrlManager : Sitecore.Commerce.XA.Foundation.Common.UrlManager.StorefrontUrlManager
   {
     public StorefrontUrlManager(ISiteContext siteContext) : base(siteContext)
@@ -47,7 +47,7 @@ namespace Sitecore.Support.Commerce.XA.Foundation.Common.UrlManager
           '/'
         }));
       }
-      string hostName = Context.Site.HostName;
+      string hostName = Sitecore.Context.Site.HostName;
       string uriString;
       if (!string.IsNullOrEmpty(hostName) && !hostName.Contains("*") && !hostName.Contains("|"))
       {
