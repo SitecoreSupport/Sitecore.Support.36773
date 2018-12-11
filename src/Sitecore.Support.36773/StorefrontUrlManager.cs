@@ -13,51 +13,69 @@
 
     public override UrlBuilder GetStorefrontUrl(string url)
     {
-      string text;
-      try
+      Uri storefrontUri;
+      if (Uri.IsWellFormedUriString(url, UriKind.Absolute))
       {
-        return new UrlBuilder(new Uri(url));
+        storefrontUri = new Uri(url);
+        return new UrlBuilder(storefrontUri);
       }
-      catch (Exception)
+
+      var path = string.Format(CultureInfo.InvariantCulture, "/{0}", url.Trim('/'));
+
+      if (!string.IsNullOrEmpty(this.SiteContext.VirtualFolder.Trim('/')))
       {
-        text = string.Format(CultureInfo.InvariantCulture, "/{0}", url.Trim(new char[]
+        if (!(path + "/").StartsWith(
+            string.Format(CultureInfo.InvariantCulture, "/{0}/", this.SiteContext.VirtualFolder.Trim('/')),
+            StringComparison.OrdinalIgnoreCase))
         {
-          '/'
-        }));
+          path = string.Format(CultureInfo.InvariantCulture, "/{0}/{1}", this.SiteContext.VirtualFolder.Trim('/'), path.Trim('/'));
+        }
       }
-      if (!string.IsNullOrEmpty(base.SiteContext.VirtualFolder.Trim(new char[]
+
+      if (this.IncludeLanguage)
       {
-        '/'
-      })) && !text.Trim(new char[]
-      {
-        '/'
-      }).StartsWith(base.SiteContext.VirtualFolder.Trim(new char[]
-      {
-        '/'
-      }), StringComparison.OrdinalIgnoreCase) && !text.StartsWith(string.Format(CultureInfo.InvariantCulture, "/{0}/", base.SiteContext.VirtualFolder.Trim(new char[]
-      {
-        '/'
-      })), StringComparison.OrdinalIgnoreCase))
-      {
-        text = string.Format(CultureInfo.InvariantCulture, "/{0}/{1}", base.SiteContext.VirtualFolder.Trim(new char[]
-        {
-          '/'
-        }), text.Trim(new char[]
-        {
-          '/'
-        }));
+        path = string.Format(CultureInfo.InvariantCulture, "/{0}/{1}", Sitecore.Context.Language.Name, path.Trim('/'));
       }
-      string hostName = Sitecore.Context.Site.HostName;
-      string uriString;
-      if (!string.IsNullOrEmpty(hostName) && !hostName.Contains("*") && !hostName.Contains("|"))
+
+      var currentSiteHostName = Sitecore.Context.Site.HostName;
+      string baseUrl;
+      if (this.IsValidHostName(currentSiteHostName))
       {
-        uriString = string.Format(CultureInfo.InvariantCulture, "{0}://{1}", StorefrontUrlManager.CurrentUrl.Scheme, hostName);
+        baseUrl = string.Format(CultureInfo.InvariantCulture, "{0}://{1}", CurrentUrl.Scheme, currentSiteHostName);
       }
       else
       {
-        uriString = string.Format(CultureInfo.InvariantCulture, "{0}://{1}", StorefrontUrlManager.CurrentUrl.Scheme, StorefrontUrlManager.CurrentUrl.Host);
+        baseUrl = string.Format(CultureInfo.InvariantCulture, "{0}://{1}", CurrentUrl.Scheme, CurrentUrl.Host);
       }
-      return new UrlBuilder(new Uri(new Uri(uriString), text));
+
+      Uri baseUri = new Uri(baseUrl);
+      storefrontUri = new Uri(baseUri, path);
+      return new UrlBuilder(storefrontUri);
+    }
+
+    /// <summary>
+    /// Checks if parameter is valid hostName.
+    /// </summary>
+    /// <param name="hostName">
+    /// The current site host name.
+    /// </param>
+    /// <returns>
+    /// The <see cref="bool"/>.
+    /// </returns>
+    /// <remarks>Currently verifies scenarios with * or | only.</remarks>
+    protected virtual bool IsValidHostName(string hostName)
+    {
+      if (string.IsNullOrEmpty(hostName))
+      {
+        return false;
+      }
+
+      if (hostName.Contains("*"))
+      {
+        return false;
+      }
+
+      return !hostName.Contains("|");
     }
   }
 }
